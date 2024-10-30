@@ -254,6 +254,45 @@ plt.show()
 
 
 
+#2.e) 
+
+# Calcular el promedio de cada estado laboral por año
+
+conteo_estado_anual = T1_2024_2004.groupby(['ANO4', 'ESTADO']).agg({"ESTADO": "count"})
+print(conteo_estado_anual) 
+
+#Hay 171 desocupados en 2004 y 86 en 2024.
+#Hay 1065 unactivos en 2004 y 775 en 2024
+
+IPCF_estado_anual = T1_2024_2004.groupby(['ANO4', 'ESTADO']).agg({"IPCF": "mean"})
+print(IPCF_estado_anual) 
+
+#2004: Ocupados (364.6), Desocupados (181.21) e Inactivos (260.30)
+#2024: Ocupados (266394.39), Desocupados (134357.59) e Inactivos (187277.53)
+
+
+#####Inciso 3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
