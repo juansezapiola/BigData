@@ -273,31 +273,118 @@ print(IPCF_estado_anual)
 
 #####Inciso 3
 
+print(conteo_estado_anual) 
+#Hay solo una persona en el 2004 que no responde su condicion de actividad. 
+
+#Guardo en una base distinta aquellas obs que respondieron y las que no a la pregunta sobre su condición de actividad (ESTADO) 
+respondieron = T1_2024_2004[T1_2024_2004['ESTADO'] != 0]
+norespondieron = T1_2024_2004[T1_2024_2004['ESTADO'] == 0]
 
 
 
+#####Inciso 4
+
+#Nueva variable PEA si están ocupados o desocupados en ESTADO
+respondieron['PEA'] = respondieron['ESTADO'].apply(lambda x: 1 if x in [1, 2] else 0)
+
+#Grafico de barra mostrando la composición por PEA para 2004 y 2024. 
+
+PEA = respondieron.groupby(['ANO4', 'PEA']).size().unstack()
+
+# Creo el gráfico de barras
+ax = PEA.plot(kind='bar', title='Composición por PEA para el 1er Trimestre de 2004 y 2024')
+ax.set_xlabel('Año', color='grey')
+ax.set_ylabel('Individuos Totales', color='grey')
+ax.legend(["PEA", "No PEA"])
+plt.xticks(rotation=0)
+plt.show()
+
+
+#####Inciso 5
+
+#Nueva variable PET que toma 1 si la persona tiene entre 15 y 65 años cumplidos
+respondieron['PET'] = respondieron['CH06'].apply(lambda x: 1 if 15 <= x <= 65 else 0)
+
+#Grafico de barra mostrando la composición por PEA para 2004 y 2024
+
+PEA_PET = respondieron.groupby(['ANO4', 'PEA', 'PET']).size().unstack(fill_value=0)
+fig, ax = plt.subplots(figsize=(10, 6))
+PEA_PET.plot(kind='bar', stacked=True, ax=ax, color=['#a6cee3', '#1f78b4'])
+
+ax.set_title('Composición por PEA y PET para el 1er Trimestre de 2004 y 2024', fontsize=14)
+ax.set_xlabel('Año y Estado PEA', color='grey', fontsize=12)
+ax.set_ylabel('Individuos Totales', color='grey', fontsize=12)
+ax.legend(["No PET", "PET"], title='Estado PET')
+plt.xticks(rotation=45)
+new_labels = []
+for label in ax.get_xticklabels():
+    text = label.get_text()
+    year, pea = text.split(", ")
+    pea_label = "No PEA" if pea.strip("()") == "0" else "PEA"
+    new_labels.append(f"{year.strip('()')} - {pea_label}")
+
+# Asignar las nuevas etiquetas
+ax.set_xticklabels(new_labels, rotation=0)
+
+plt.tight_layout()
+plt.show()
+
+
+#####Inciso 6
+
+'''
+Por último, agreguen la base respondieron una columna llamada desocupado que
+tome 1 si esta desocupada. ¿Cuántas personas están desocupadas en 2004 vs 2024?
+
+a. Muestre la proporción de desocupados por nivel educativo comparando 2004
+vs 2024. ¿Hubo cambios de desocupados por nivel educativo?
+
+b. Cree una variable categórica de años cumplidos (CH06) agrupada de a 10 años.
+Muestre proporción de desocupados por edad agrupada comparando 2004 vs
+2024. ¿Hubo cambios de desocupados por edad?
+
+'''
+
+#Nueva variable desocupado, si esta desocupado toma valor 1 else 0.
+respondieron['DESOCUPADO'] = respondieron['ESTADO'].apply(lambda x: 1 if x in [2] else 0)
+
+#Vemos cuantos son los deocupados por año
+frecuencia_desocupado = respondieron.groupby(['ANO4', 'DESOCUPADO']).size().unstack(fill_value=0)
+print(frecuencia_desocupado) 
+
+#2004: 171
+#2024: 86
+
+#Desocupación por nivel educativo:   
+des_educ = respondieron.groupby(['ANO4', 'NIVEL_ED', 'DESOCUPADO']).size().unstack(fill_value=0)
+
+#Invierto el diccionario que cree de educación para hacer la tabla mas prolija
+mapa_instruccion_invertido = {v: k for k, v in mapa_instruccion.items()}
+des_educ.rename(index=mapa_instruccion_invertido, level=1, inplace=True)
+des_educ['Proporción_Desocupados'] = ((des_educ[1] / des_educ.sum(axis=1)) * 100).round(2)
+
+print(des_educ[['Proporción_Desocupados']])
+
+
+# Crear una nueva columna 'CH06_grupos' con los intervalos de edad de 10 en 10 años
+respondieron['CH06_grupos'] = pd.cut(
+    respondieron['CH06'],
+    bins=range(0, 111, 10),  # Intervalos de 10 en 10 años, hasta 110
+    right=False,              # Excluir el límite derecho en cada intervalo
+    labels=[f"{i}-{i+10}" for i in range(0, 110, 10)]  # Etiquetas para cada grupo
+)
+
+# Chequeamos que el resultado sea el correcto
+print(respondieron[['CH06', 'CH06_grupos']].head())
+
+des_edad = respondieron.groupby(['ANO4', 'CH06_grupos', 'DESOCUPADO']).size().unstack(fill_value=0)
+print(des_edad)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+'''
+Parte II: Clasificación
+'''
 
 
 
