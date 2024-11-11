@@ -19,7 +19,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-os.chdir('/Users/juansegundozapiola/Documents/Maestria/Big Data/BigData/TPs/TP3')
+os.chdir(r'C:\Users\eitan\OneDrive - Económicas - UBA\Documentos\GitHub\BigData\TPs\TP3')
 
 
 '''
@@ -52,7 +52,7 @@ T1_2004 = T1_2004[T1_2004['aglomerado'] == 'Gran Córdoba']
 
 T1_2004.columns = T1_2004.columns.str.upper() #las variables de 2004 estan en lower case las pasamos a upper case. 
 
-#Veo que variables hay diferentes en ambas bases:
+#Vemos qué variables son diferentes en ambas bases:
 
 if set(T1_2024.columns) == set(T1_2004.columns):
     print("Ambas bases tienen las mismas columnas.")
@@ -65,14 +65,14 @@ else:
 # A partir del tercer trimestre del año 2010, las variables referidas al Plan Jefes y Jefas de Hogar(Pj1_1, Pj2_1 y Pj3_1) dejaron de ser relevadas
 
 
-#Unimos ambos trimestres en una sola base: 
+# Unimos ambos trimestres en una sola base: 
 
 T1_2024_2004 = pd.concat([T1_2024, T1_2004], ignore_index=True)
 
 
 ##----Correcciones en agrupacion de bases:
 
-#mismo diccionario para ambas bases: Genero
+# Mismo diccionario para ambas bases: Género
 frecuencia_genero = T1_2024_2004['CH04'].value_counts()
 print(frecuencia_genero) 
 mapa_genero = {"Varón": 1, 
@@ -84,7 +84,7 @@ T1_2024_2004['CH04'] = T1_2024_2004['CH04'].replace(mapa_genero)
 T1_2024_2004['CH06'] = pd.to_numeric(T1_2024_2004['CH06'], errors='coerce')
 
 
-#mismo diccionario para ambas bases: estado civil
+#mismo diccionario para ambas bases: Estado Civil
 frecuencia_estado = T1_2024_2004['CH07'].value_counts()
 print(frecuencia_estado) 
 mapa_estado = { "Unido": 1, 
@@ -94,7 +94,7 @@ mapa_estado = { "Unido": 1,
                "Soltero": 5}
 T1_2024_2004['CH07'] = T1_2024_2004['CH07'].replace(mapa_estado)
 
-#mismo diccionario para ambas bases: nivel educativo
+# Mismo diccionario para ambas bases: Nivel Educativo
 frecuencia_educacion = T1_2024_2004['CH12'].value_counts()
 print(frecuencia_educacion) 
 mapa_educacion = {
@@ -111,7 +111,7 @@ mapa_educacion = {
 T1_2024_2004['CH12'] = T1_2024_2004['CH12'].replace(mapa_educacion)
 
 
-#mismo diccionario para ambas bases: nivel_ed
+# Mismo diccionario para ambas bases: nivel_ed
 frecuencia_instruccion = T1_2024_2004['NIVEL_ED'].value_counts()
 print(frecuencia_instruccion) 
 mapa_instruccion = {
@@ -126,7 +126,7 @@ mapa_instruccion = {
 }
 T1_2024_2004['NIVEL_ED'] = T1_2024_2004['NIVEL_ED'].replace(mapa_instruccion)
 
-#mismo diccionario para ambas bases: cobertura médica
+# Mismo diccionario para ambas bases: Cobertura Médica
 frecuencia_cob = T1_2024_2004['CH08'].value_counts()
 print(frecuencia_cob) 
 mapa_cobertura_salud = {
@@ -169,7 +169,7 @@ mapa_condicion = {
 T1_2024_2004['CAT_INAC'] = T1_2024_2004['CAT_INAC'].replace(mapa_condicion)
 
 
-#Quiero esta columna como enteros
+# Quiero esta columna como enteros
 T1_2024_2004['ANO4'] = T1_2024_2004['ANO4'].astype(int)
 T1_2024_2004['CH12'] = T1_2024_2004['CH12'].astype(int)
 T1_2024_2004['CAT_INAC'] = T1_2024_2004['CAT_INAC'].astype(int)
@@ -179,13 +179,13 @@ T1_2024_2004['CAT_INAC'] = T1_2024_2004['CAT_INAC'].astype(int)
 
 #2.b)
 
-#veamos cuantos missings hay en cada variable:
+# Veamos cuantos missings hay en cada variable:
 missing_data = T1_2024_2004.isnull().sum()
 print(missing_data)
 
-#Eliminamos aquellas observaciones con missings o que no tienen sentido:   
+# Eliminamos aquellas observaciones con missings o que no tienen sentido:   
     
-#Monto de ingreso total individual - P47T:
+# Monto de ingreso total individual - P47T:
 
 T1_2024_2004 = T1_2024_2004[T1_2024_2004['P47T'] >= 0] #Elimino ingresos negativos y nan
 
@@ -198,12 +198,12 @@ T1_2024_2004 = T1_2024_2004[T1_2024_2004['CH06'] >= 0] #Elimino edades negativas
 #2.c)
 
 
-#Gráfico de barras mostrando la composición por sexo para 2004 y 2024
+# Gráfico de barras mostrando la composición por sexo para 2004 y 2024
 
-# Agrupo y sumo cantidad de individuos por género para cada año
+## Agrupamos y sumamos cantidad de individuos por género para cada año
 comp_sexo = T1_2024_2004.groupby(['ANO4', 'CH04']).size().unstack()
 
-# Creo el gráfico de barras
+## Creamos el gráfico de barras
 ax = comp_sexo.plot(kind='bar', title='Composición del sexo para 1er Trimestre 2004 y 2024')
 ax.set_xlabel('Año', color='grey')
 ax.set_ylabel('Individuos Totales', color='grey')
@@ -216,15 +216,15 @@ plt.show()
 
 variables_interes = ['CH04', 'CH06', 'CH07', 'CH08', 'NIVEL_ED', 'ESTADO', 'CAT_INAC', 'IPCF']
 
-# Filtro los datos para 2004 y calculo la correlación
+# Filtramos los datos para 2004 y calculamos la correlación
 data_2004 = T1_2024_2004[T1_2024_2004['ANO4'] == 2004][variables_interes]
 corr_2004 = data_2004.corr()
 
-#Mismo para 2024
+# Replicamos para 2024
 data_2024 = T1_2024_2004[T1_2024_2004['ANO4'] == 2024][variables_interes]
 corr_2024 = data_2024.corr()
 
-# Crear el heatmap para 2004
+# Creamos el heatmap para 2004
 plt.figure(figsize=(10, 8))
 ax1 = sns.heatmap(
     corr_2004, 
@@ -238,7 +238,7 @@ ax1.set_xticklabels(ax1.get_xticklabels(), rotation=45, horizontalalignment='rig
 ax1.set_title('Matriz de Correlación - Año 2004')
 plt.show()
 
-# Crear el heatmap para 2024
+# Creamos el heatmap para 2024
 plt.figure(figsize=(10, 8))
 ax2 = sns.heatmap(
     corr_2024, 
@@ -274,9 +274,9 @@ print(IPCF_estado_anual)
 #####Inciso 3
 
 print(conteo_estado_anual) 
-#Hay solo una persona en el 2004 que no responde su condicion de actividad. 
+# Hay sólo una persona en el 2004 que no responde su condicion de actividad. 
 
-#Guardo en una base distinta aquellas obs que respondieron y las que no a la pregunta sobre su condición de actividad (ESTADO) 
+# Guardamos en una base distinta aquellas obs que respondieron y las que no a la pregunta sobre su condición de actividad (ESTADO) 
 respondieron = T1_2024_2004[T1_2024_2004['ESTADO'] != 0]
 norespondieron = T1_2024_2004[T1_2024_2004['ESTADO'] == 0]
 
@@ -284,10 +284,10 @@ norespondieron = T1_2024_2004[T1_2024_2004['ESTADO'] == 0]
 
 #####Inciso 4
 
-#Nueva variable PEA si están ocupados o desocupados en ESTADO
+# Nueva variable PEA si están ocupados o desocupados en ESTADO
 respondieron['PEA'] = respondieron['ESTADO'].apply(lambda x: 1 if x in [1, 2] else 0)
 
-#Grafico de barra mostrando la composición por PEA para 2004 y 2024. 
+# Gráfico de barras mostrando la composición por PEA para 2004 y 2024. 
 
 PEA = respondieron.groupby(['ANO4', 'PEA']).size().unstack()
 
@@ -302,10 +302,10 @@ plt.show()
 
 #####Inciso 5
 
-#Nueva variable PET que toma 1 si la persona tiene entre 15 y 65 años cumplidos
+# Nueva variable PET que toma 1 si la persona tiene entre 15 y 65 años cumplidos
 respondieron['PET'] = respondieron['CH06'].apply(lambda x: 1 if 15 <= x <= 65 else 0)
 
-#Grafico de barra mostrando la composición por PEA para 2004 y 2024
+# Gráfico de barra mostrando la composición por PEA para 2004 y 2024
 
 PEA_PET = respondieron.groupby(['ANO4', 'PEA', 'PET']).size().unstack(fill_value=0)
 fig, ax = plt.subplots(figsize=(10, 6))
@@ -385,6 +385,53 @@ print(des_edad)
 '''
 Parte II: Clasificación
 '''
+
+# Importamos los paquetes necesarios
+import numpy as np
+
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures 
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+from sklearn.preprocessing import scale
+from sklearn.linear_model import Lasso, LassoCV, Ridge, RidgeCV
+from sklearn.model_selection import train_test_split
+
+# Filtramos la base para cada año
+respondieron_2004 = respondieron[respondieron['ANO4'] == 2004]
+respondieron_2024 = respondieron[respondieron['ANO4'] == 2024]
+
+# Establecemos las variables dependientes e independientes
+## Para 2004:
+y_2004 = respondieron_2004.DESOCUPADO
+x_2004 = respondieron_2004.drop(columns=['DESOCUPADO', 'ANO4'])
+
+## Para 2024:
+y_2024 = respondieron_2024.DESOCUPADO
+x_2024 = respondieron_2024.drop(columns=['DESOCUPADO', 'ANO4'])
+
+# Agregamos columna de 1s a la matriz de independientes (x)
+ones_2004 = pd.DataFrame(np.ones(x_2004.shape[0], dtype=int), columns=['Intercept'])
+x_2004 = pd.concat([ones_2004, x_2004], axis=1)
+
+ones_2024 = pd.DataFrame(np.ones(x_2024.shape[0], dtype=int), columns=['Intercept'])
+x_2024 = pd.concat([ones_2024, x_2024], axis=1)
+
+
+# Verificamos la información de los df de x
+x_2004.info()
+x_2024.info()
+
+# Partimos cada base en dos y transformamos el vector x: 
+x_2004_train, x_2004_test, y_2004_train, y_2004_test = train_test_split(x_2004, y_2004, test_size = 0.7, random_state = 101)
+x_2024_train, x_2024_test, y_2024_train, y_2024_test = train_test_split(x_2024, y_2024, test_size = 0.7, random_state = 101)
+
+'''
+NO SE POR QUÉ LAS PARTICIONES NO TIENEN LA MISMA CANTIDAD DE FILAS. NO PUEDO HACER EL SPLIT
+'''
+
+
 
 
 
