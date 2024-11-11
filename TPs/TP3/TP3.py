@@ -386,6 +386,9 @@ print(des_edad)
 Parte II: Clasificación
 '''
 
+##### Inciso 1 ####
+
+
 # Importamos los paquetes necesarios
 import numpy as np
 
@@ -411,6 +414,16 @@ x_2004 = respondieron_2004.drop(columns=['DESOCUPADO', 'ANO4'])
 y_2024 = respondieron_2024.DESOCUPADO
 x_2024 = respondieron_2024.drop(columns=['DESOCUPADO', 'ANO4'])
 
+ones_2004 = pd.DataFrame(np.ones(x_2004.shape[0], dtype=int), columns=['Intercept'])
+x_2004 = pd.concat([ones_2004, x_2004], axis=1)
+
+ones_2024 = pd.DataFrame(np.ones(x_2024.shape[0], dtype=int), columns=['Intercept'])
+x_2024 = pd.concat([ones_2024, x_2024], axis=1)
+
+# Reseteamos los índices
+x_2004 = x_2004.reset_index(drop=True)
+x_2024 = x_2024.reset_index(drop=True)
+
 # Agregamos columna de 1s a la matriz de independientes (x)
 ones_2004 = pd.DataFrame(np.ones(x_2004.shape[0], dtype=int), columns=['Intercept'])
 x_2004 = pd.concat([ones_2004, x_2004], axis=1)
@@ -418,18 +431,20 @@ x_2004 = pd.concat([ones_2004, x_2004], axis=1)
 ones_2024 = pd.DataFrame(np.ones(x_2024.shape[0], dtype=int), columns=['Intercept'])
 x_2024 = pd.concat([ones_2024, x_2024], axis=1)
 
-
 # Verificamos la información de los df de x
 x_2004.info()
 x_2024.info()
 
 # Partimos cada base en dos y transformamos el vector x: 
-x_2004_train, x_2004_test, y_2004_train, y_2004_test = train_test_split(x_2004, y_2004, test_size = 0.7, random_state = 101)
-x_2024_train, x_2024_test, y_2024_train, y_2024_test = train_test_split(x_2024, y_2024, test_size = 0.7, random_state = 101)
+x_2004_train, x_2004_test, y_2004_train, y_2004_test = train_test_split(x_2004, y_2004, test_size = 0.3, random_state = 101)
+x_2024_train, x_2024_test, y_2024_train, y_2024_test = train_test_split(x_2024, y_2024, test_size = 0.3, random_state = 101)
 
-'''
-NO SE POR QUÉ LAS PARTICIONES NO TIENEN LA MISMA CANTIDAD DE FILAS. NO PUEDO HACER EL SPLIT
-'''
+# Revisamos cuantas observaciones quedaron para Test y cuantas para Entrenamiento.
+print(f'Para el año 2004 tenemos un conjunto de entrenamiento de {len(x_2004_train)} observaciones y uno de test de {len(x_2004_test)} observaciones.')
+print(f'Para el año 2024 tenemos un conjunto de entrenamiento de {len(x_2024_train)} observaciones y uno de test de {len(x_2024_test)} observaciones.')
+
+
+##### Inciso 2 ####
 
 
 
