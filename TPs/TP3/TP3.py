@@ -403,6 +403,7 @@ from sklearn.model_selection import train_test_split
 
 # Filtramos la base para cada año
 respondieron_2004 = respondieron[respondieron['ANO4'] == 2004]
+respondieron_2004.loc[:, 'TRIMESTRE'] = 1
 respondieron_2024 = respondieron[respondieron['ANO4'] == 2024]
 
 # Establecemos las variables dependientes e independientes
@@ -413,12 +414,6 @@ x_2004 = respondieron_2004.drop(columns=['DESOCUPADO', 'ANO4'])
 ## Para 2024:
 y_2024 = respondieron_2024.DESOCUPADO
 x_2024 = respondieron_2024.drop(columns=['DESOCUPADO', 'ANO4'])
-
-ones_2004 = pd.DataFrame(np.ones(x_2004.shape[0], dtype=int), columns=['Intercept'])
-x_2004 = pd.concat([ones_2004, x_2004], axis=1)
-
-ones_2024 = pd.DataFrame(np.ones(x_2024.shape[0], dtype=int), columns=['Intercept'])
-x_2024 = pd.concat([ones_2024, x_2024], axis=1)
 
 # Reseteamos los índices
 x_2004 = x_2004.reset_index(drop=True)
@@ -446,7 +441,19 @@ print(f'Para el año 2024 tenemos un conjunto de entrenamiento de {len(x_2024_tr
 
 ##### Inciso 2 ####
 
+## Regresión Logística
+from sklearn.linear_model import LogisticRegression
 
+# Creamos y entrenamos el modelo de regresión logística para 2004 y 2024
+log_reg_2004 = LogisticRegression(penalty=None).fit(x_2004_train, y_2004_train)
+log_reg_2004.fit(x_2004_train, y_2004_train)
+
+log_reg_2024 = LogisticRegression(penalty=None).fit(x_2024_train, y_2024_train)
+
+
+# Predicciones en el conjunto de prueba para cada año
+y_pred_2004 = log_reg_2004.predict(x_2004_test)
+y_pred_2024 = log_reg_2024.predict(x_2024_test)
 
 
 
