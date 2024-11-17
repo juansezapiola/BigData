@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 -------------------------------------------------------------------------------
 -------------- Análisis Descriptivo y Predicción de Desocupación --------------
@@ -11,9 +9,20 @@
 
 -                      Fecha: 15 de Noviembre de 2024                         -
 -------------------------------------------------------------------------------
-"""
 
-# Importamos los paquetes necesarios
+---------
+ ÍNDICE
+---------
+
+0. Seteo del espacio de trabajo
+1. Parte I: Analizando la base
+2. Parte II: Clasificación
+
+--------------------------------
+0. SETEO DEL ESPACIO DE TRABAJO 
+--------------------------------
+"""
+## Importamos los paquetes necesarios
 
 # Manejo de archivos y directorios
 import os
@@ -37,49 +46,45 @@ from sklearn.metrics import (
     confusion_matrix, 
     accuracy_score, 
     roc_curve, 
-    auc, 
-    RocCurveDisplay
+    auc
 )
 
 # Gráficos
 import matplotlib.pyplot as plt
 
-
-#os.chdir(r'C:\Users\eitan\OneDrive - Económicas - UBA\Documentos\GitHub\BigData\TPs\TP3')
+## Definimos el directorio de trabajo
 os.chdir(r'/Users/tomasmarotta/Documents/GitHub/BigData/TPs/TP3')
 
 '''
-Parte I: Analizando la base
+--------------------------------
+ 1. Parte I: Analizando la base
+--------------------------------
 '''
 
-#####Inciso 1 (ver documento) 
+##### Inciso 2
 
-#####Inciso 2
+### 2.a. Creamos la base de datos con la que vamos a trabajar
 
-#2.a)
-
-#Abrimos la base del primer trimestre para 2024 y 2004.
-
+# Abrimos la base del primer trimestre para 2024 y 2004.
 T1_2024 = pd.read_excel("usu_individual_T124.xlsx") 
 T1_2004 = pd.read_stata("Individual_t104.dta")
 
+# Resumen de la información del Data Frame
 T1_2024.info(verbose = True)
 T1_2004.info(verbose = True)
 
-
+# Identificamos el ID de el aglomerado de Gran Córdoba.
 print(T1_2024['AGLOMERADO'].unique()) #13 es Gran Córdoba
 print(T1_2004['aglomerado'].unique()) ##13 es Gran Córdoba
 
-
-#Nos quedamos con las observaciones correspondientes al aglomerado de Gran Córdoba
-
+# Nos quedamos con las observaciones correspondientes al aglomerado de Gran Córdoba
 T1_2024 = T1_2024[T1_2024['AGLOMERADO'] == 13]
 T1_2004 = T1_2004[T1_2004['aglomerado'] == 'Gran Córdoba']
 
-T1_2004.columns = T1_2004.columns.str.upper() #las variables de 2004 estan en lower case las pasamos a upper case. 
+# Pasamos las variables de 2004 de lower case a upper case.
+T1_2004.columns = T1_2004.columns.str.upper() 
 
-#Vemos qué variables son diferentes en ambas bases:
-
+# Vemos qué variables son diferentes en ambas bases:
 if set(T1_2024.columns) == set(T1_2004.columns):
     print("Ambas bases tienen las mismas columnas.")
 else:
@@ -88,13 +93,11 @@ else:
     print("Columnas en T1_2004 pero no en T1_2024:", set(T1_2004.columns) - set(T1_2024.columns))
 
 
-# A partir del tercer trimestre del año 2010, las variables referidas al Plan Jefes y Jefas de Hogar(Pj1_1, Pj2_1 y Pj3_1) dejaron de ser relevadas
-
+# A partir del tercer trimestre del año 2010, las variables referidas al Plan 
+# Jefes y Jefas de Hogar(Pj1_1, Pj2_1 y Pj3_1) dejaron de ser relevadas.
 
 # Unimos ambos trimestres en una sola base: 
-
 T1_2024_2004 = pd.concat([T1_2024, T1_2004], ignore_index=True)
-
 
 ##----Correcciones en agrupacion de bases:
 
@@ -105,12 +108,10 @@ mapa_genero = {"Varón": 1,
                "Mujer": 2}
 T1_2024_2004['CH04'] = T1_2024_2004['CH04'].replace(mapa_genero)
 
-
 # Convertir la columna 'CH06' a numérica, colocando NaN en valores no numéricos
 T1_2024_2004['CH06'] = pd.to_numeric(T1_2024_2004['CH06'], errors='coerce')
 
-
-#mismo diccionario para ambas bases: Estado Civil
+# Mismo diccionario para ambas bases: Estado Civil
 frecuencia_estado = T1_2024_2004['CH07'].value_counts()
 print(frecuencia_estado) 
 mapa_estado = { "Unido": 1, 
@@ -135,7 +136,6 @@ mapa_educacion = {
     "Educación especial (discapacitado)": 9
 }
 T1_2024_2004['CH12'] = T1_2024_2004['CH12'].replace(mapa_educacion)
-
 
 # Mismo diccionario para ambas bases: nivel_ed
 frecuencia_instruccion = T1_2024_2004['NIVEL_ED'].value_counts()
@@ -166,10 +166,9 @@ mapa_cobertura_salud = {
     "Mutual/prepaga/servicio de emergencia/Planes y seguros públicos": 23,
     "Obra social, mutual/prepaga/servicio de emergencia y planes y seguros públicos": 123
 }
-
 T1_2024_2004['CH08'] = T1_2024_2004['CH08'].replace(mapa_cobertura_salud)
 
-
+# Mismo diccionario para ambas bases: Condición de Actividad
 frecuencia_EST = T1_2024_2004['ESTADO'].value_counts()
 print(frecuencia_EST) 
 mapa_actividad = {
@@ -181,6 +180,7 @@ mapa_actividad = {
 }
 T1_2024_2004['ESTADO'] = T1_2024_2004['ESTADO'].replace(mapa_actividad)
 
+# Mismo diccionario para ambas bases: Categoría de Inactividad
 frecuencia_CAT = T1_2024_2004['CAT_INAC'].value_counts()
 print(frecuencia_CAT) 
 mapa_condicion = {
@@ -194,16 +194,13 @@ mapa_condicion = {
 }
 T1_2024_2004['CAT_INAC'] = T1_2024_2004['CAT_INAC'].replace(mapa_condicion)
 
-
-# Quiero esta columna como enteros
+# Cambio el formato de las siguientes columnas para que me aparezcan números enteros
 T1_2024_2004['ANO4'] = T1_2024_2004['ANO4'].astype(int)
 T1_2024_2004['CH12'] = T1_2024_2004['CH12'].astype(int)
 T1_2024_2004['CAT_INAC'] = T1_2024_2004['CAT_INAC'].astype(int)
 
-##----
 
-
-#2.b)
+### 2.b. Limpueza de la base de datos
 
 # Veamos cuantos missings hay en cada variable:
 missing_data = T1_2024_2004.isnull().sum()
@@ -220,16 +217,12 @@ T1_2024_2004 = T1_2024_2004[T1_2024_2004['P47T'] >= 0] #Elimino ingresos negativ
 T1_2024_2004 = T1_2024_2004[T1_2024_2004['CH06'] >= 0] #Elimino edades negativas y nan
 
 
+### 2.c. Gráfico de barras mostrando la composición por sexo para 2004 y 2024
 
-#2.c)
-
-
-# Gráfico de barras mostrando la composición por sexo para 2004 y 2024
-
-## Agrupamos y sumamos cantidad de individuos por género para cada año
+# Agrupamos y sumamos cantidad de individuos por género para cada año
 comp_sexo = T1_2024_2004.groupby(['ANO4', 'CH04']).size().unstack()
 
-## Creamos el gráfico de barras
+# Creamos el gráfico de barras
 ax = comp_sexo.plot(kind='bar', title='Composición del sexo para 1er Trimestre 2004 y 2024')
 ax.set_xlabel('Año', color='grey')
 ax.set_ylabel('Individuos Totales', color='grey')
@@ -238,7 +231,7 @@ plt.xticks(rotation=0)
 plt.show()
 
 
-#2.d)
+### 2.d. Matriz de correlación para 2004 y 2024 con variables de interés
 
 variables_interes = ['CH04', 'CH06', 'CH07', 'CH08', 'NIVEL_ED', 'ESTADO', 'CAT_INAC', 'IPCF']
 
@@ -279,11 +272,9 @@ ax2.set_title('Matriz de Correlación - Año 2024')
 plt.show()
 
 
-
-#2.e) 
+#2.e. Algunas estadísticas descriptivas
 
 # Calcular el promedio de cada estado laboral por año
-
 conteo_estado_anual = T1_2024_2004.groupby(['ANO4', 'ESTADO']).agg({"ESTADO": "count"})
 print(conteo_estado_anual) 
 
@@ -305,7 +296,6 @@ print(conteo_estado_anual)
 # Guardamos en una base distinta aquellas obs que respondieron y las que no a la pregunta sobre su condición de actividad (ESTADO) 
 respondieron = T1_2024_2004[T1_2024_2004['ESTADO'] != 0]
 norespondieron = T1_2024_2004[T1_2024_2004['ESTADO'] == 0]
-
 
 
 #####Inciso 4
@@ -358,33 +348,20 @@ plt.show()
 
 #####Inciso 6
 
-'''
-Por último, agreguen la base respondieron una columna llamada desocupado que
-tome 1 si esta desocupada. ¿Cuántas personas están desocupadas en 2004 vs 2024?
-
-a. Muestre la proporción de desocupados por nivel educativo comparando 2004
-vs 2024. ¿Hubo cambios de desocupados por nivel educativo?
-
-b. Cree una variable categórica de años cumplidos (CH06) agrupada de a 10 años.
-Muestre proporción de desocupados por edad agrupada comparando 2004 vs
-2024. ¿Hubo cambios de desocupados por edad?
-
-'''
-
-#Nueva variable desocupado, si esta desocupado toma valor 1 else 0.
+# Nueva variable desocupado, si esta desocupado toma valor 1 else 0.
 respondieron['DESOCUPADO'] = respondieron['ESTADO'].apply(lambda x: 1 if x in [2] else 0)
 
-#Vemos cuantos son los deocupados por año
+# Vemos cuantos son los deocupados por año
 frecuencia_desocupado = respondieron.groupby(['ANO4', 'DESOCUPADO']).size().unstack(fill_value=0)
 print(frecuencia_desocupado) 
 
 #2004: 171
 #2024: 86
 
-#Desocupación por nivel educativo:   
+# Desocupación por nivel educativo:   
 des_educ = respondieron.groupby(['ANO4', 'NIVEL_ED', 'DESOCUPADO']).size().unstack(fill_value=0)
 
-#Invierto el diccionario que cree de educación para hacer la tabla mas prolija
+# Invierto el diccionario que cree de educación para hacer la tabla mas prolija
 mapa_instruccion_invertido = {v: k for k, v in mapa_instruccion.items()}
 des_educ.rename(index=mapa_instruccion_invertido, level=1, inplace=True)
 des_educ['Proporción_Desocupados'] = ((des_educ[1] / des_educ.sum(axis=1)) * 100).round(2)
@@ -403,16 +380,18 @@ respondieron['CH06_grupos'] = pd.cut(
 # Chequeamos que el resultado sea el correcto
 print(respondieron[['CH06', 'CH06_grupos']].head())
 
+#TM: juanse comenta estas dos lineas
 des_edad = respondieron.groupby(['ANO4', 'CH06_grupos', 'DESOCUPADO']).size().unstack(fill_value=0)
 print(des_edad)
 
 
-
 '''
-Parte II: Clasificación
+----------------------------
+ 2. Parte II: Clasificación
+----------------------------
 '''
 
-##### Inciso 1 ####
+##### Inciso 1 
 
 # Filtramos la base para cada año
 respondieron_2004 = respondieron[respondieron['ANO4'] == 2004]
@@ -423,13 +402,10 @@ respondieron_2024 = respondieron[respondieron['ANO4'] == 2024]
 
 ## Para 2004:
 y_2004 = respondieron_2004.DESOCUPADO
-x_2004 = respondieron_2004.loc[:, 'CH03':'NIVEL_ED'].drop(columns=['CH15_COD', 'CH16_COD']) #TM: deberíamos incluir IPCF? Es raro, porque esas preguntas se hacen cuando se pregunta actividad. Yo no la incluiría.
-#x_2004 = x_2004.assign(IPCF=respondieron_2004['IPCF']) #TM: yo no la incluiría
-
+x_2004 = respondieron_2004.loc[:, 'CH03':'NIVEL_ED'].drop(columns=['CH15_COD', 'CH16_COD']) 
 ## Para 2024:
 y_2024 = respondieron_2024.DESOCUPADO
-x_2024 = respondieron_2024.loc[:, 'CH03':'NIVEL_ED'].drop(columns=['CH15_COD', 'CH16_COD']) #TM: deberíamos incluir IPCF? Es raro, porque esas preguntas se hacen cuando se pregunta actividad. Yo no la incluiría.
-# x_2024 = x_2024.assign(IPCF=respondieron_2024['IPCF'])  #TM: yo no la incluiría
+x_2024 = respondieron_2024.loc[:, 'CH03':'NIVEL_ED'].drop(columns=['CH15_COD', 'CH16_COD']) 
 
 # Identificamos las variables categóricas y creamos dummies en base a sus valores
 x_2004 = pd.get_dummies(x_2004, drop_first=True)
@@ -597,7 +573,7 @@ print(f"Accuracy: {accuracy_score(y_2024_test, y_pred_nb_2024):.4f}")
 print(f"AUC: {roc_auc_nb_2024:.4f}")
 print(f"Matriz de Confusión:\n{confusion_matrix(y_2024_test, y_pred_nb_2024)}")
 
-# ========================= Gráfico de Curvas ROC (2024) =========================
+## Gráfico de Curvas ROC (2024)
 plt.figure(figsize=(10, 6))
 plt.plot(fpr_log_2024, tpr_log_2024, label=f"Reg. Logística (AUC = {roc_auc_log_2024:.4f})")
 plt.plot(fpr_lda_2024, tpr_lda_2024, label=f"LDA (AUC = {roc_auc_lda_2024:.4f})")
@@ -611,8 +587,27 @@ plt.legend(loc="lower right")
 plt.show()
 
 
+#####Inciso 4
 
+# Seleccionamos variables independientes en norespondieron  
+x_noresp = norespondieron.loc[:, 'CH03':'NIVEL_ED'].drop(columns=['CH15_COD', 'CH16_COD'])
 
+# Creamos variables dummies asegurando consistencia
+x_noresp = pd.get_dummies(x_noresp, drop_first=True)
 
+# Reindexamos para alinear las columnas con x_2024 y garantizar compatibilidad en el modelo
+x_noresp = x_noresp.reindex(columns=x_2024.columns, fill_value=0)  
 
+# Asegurar que el orden y las columnas sean consistentes
+x_noresp = x_noresp[x_2024.columns]
 
+# Reindexar las columnas de x_noresp para que coincidan con las columnas utilizadas en el modelo
+x_noresp = x_noresp.reindex(columns=x_2024.columns, fill_value=0)
+
+# Predecimos la probabilidad de desocupación en norespondieron usando el modelo entrenado
+y_pred_noresp = log_reg_2024.predict(x_noresp)
+
+# Calcular la proporción de desocupados en la base norespondieron
+proporcion_desocupados = np.mean(y_pred_noresp)
+
+print(f"Proporción de personas identificadas como desocupadas en la base norespondieron: {proporcion_desocupados:.2%}")
