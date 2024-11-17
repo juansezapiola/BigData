@@ -595,16 +595,16 @@ x_noresp = norespondieron.loc[:, 'CH03':'NIVEL_ED'].drop(columns=['CH15_COD', 'C
 x_noresp = pd.get_dummies(x_noresp, drop_first=True)
 
 # Reindexamos para alinear las columnas con x_2024 y garantizar compatibilidad en el modelo
-x_noresp = x_noresp.reindex(columns=x_2024.columns, fill_value=0)  
+x_noresp = x_noresp.reindex(columns=x_2004.columns, fill_value=0)  
 
 # Asegurar que el orden y las columnas sean consistentes
-x_noresp = x_noresp[x_2024.columns]
+x_noresp = x_noresp[x_2004.columns]
 
 # Reindexar las columnas de x_noresp para que coincidan con las columnas utilizadas en el modelo
-x_noresp = x_noresp.reindex(columns=x_2024.columns, fill_value=0)
+x_noresp = x_noresp.reindex(columns=x_2004.columns, fill_value=0)
 
 # Predecimos la probabilidad de desocupación en norespondieron usando el modelo entrenado
-y_pred_noresp = log_reg_2024.predict(x_noresp)
+y_pred_noresp = knn_2004.predict(x_noresp)
 
 # Calcular la proporción de desocupados en la base norespondieron
 proporcion_desocupados = np.mean(y_pred_noresp)
