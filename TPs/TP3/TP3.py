@@ -435,8 +435,7 @@ print(f'Para el año 2004 tenemos un conjunto de entrenamiento de {len(x_2004_tr
 print(f'Para el año 2024 tenemos un conjunto de entrenamiento de {len(x_2024_train)} observaciones y uno de test de {len(x_2024_test)} observaciones.')
 
 
-##### Inciso 2 ####
-
+##### Inciso 2
 
 # === Año 2004 === #
 
