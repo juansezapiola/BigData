@@ -13,20 +13,46 @@
 -------------------------------------------------------------------------------
 """
 
+# Importamos los paquetes necesarios
 
+# Manejo de archivos y directorios
 import os
-import pandas as pd
-import matplotlib.pyplot as plt
+
+# Visualización de datos
 import seaborn as sns
 
-os.chdir(r'C:\Users\eitan\OneDrive - Económicas - UBA\Documentos\GitHub\BigData\TPs\TP3')
+# Manejo de datos
+import pandas as pd
+import numpy as np
 
+# Modelos de Machine Learning
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+
+# Métricas y evaluación de modelos
+from sklearn.metrics import (
+    confusion_matrix, 
+    accuracy_score, 
+    roc_curve, 
+    auc, 
+    RocCurveDisplay
+)
+
+# Gráficos
+import matplotlib.pyplot as plt
+
+
+#os.chdir(r'C:\Users\eitan\OneDrive - Económicas - UBA\Documentos\GitHub\BigData\TPs\TP3')
+os.chdir(r'/Users/tomasmarotta/Documents/GitHub/BigData/TPs/TP3')
 
 '''
 Parte I: Analizando la base
 '''
 
-#####Inciso 1 (ver documento)
+#####Inciso 1 (ver documento) 
 
 #####Inciso 2
 
@@ -388,32 +414,26 @@ Parte II: Clasificación
 
 ##### Inciso 1 ####
 
-
-# Importamos los paquetes necesarios
-import numpy as np
-
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures 
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import r2_score
-from sklearn.preprocessing import scale
-from sklearn.linear_model import Lasso, LassoCV, Ridge, RidgeCV
-from sklearn.model_selection import train_test_split
-
 # Filtramos la base para cada año
 respondieron_2004 = respondieron[respondieron['ANO4'] == 2004]
 respondieron_2004.loc[:, 'TRIMESTRE'] = 1
 respondieron_2024 = respondieron[respondieron['ANO4'] == 2024]
 
 # Establecemos las variables dependientes e independientes
+
 ## Para 2004:
 y_2004 = respondieron_2004.DESOCUPADO
-x_2004 = respondieron_2004.drop(columns=['DESOCUPADO', 'ANO4'])
+x_2004 = respondieron_2004.loc[:, 'CH03':'NIVEL_ED'].drop(columns=['CH15_COD', 'CH16_COD']) #TM: deberíamos incluir IPCF? Es raro, porque esas preguntas se hacen cuando se pregunta actividad. Yo no la incluiría.
+#x_2004 = x_2004.assign(IPCF=respondieron_2004['IPCF']) #TM: yo no la incluiría
 
 ## Para 2024:
 y_2024 = respondieron_2024.DESOCUPADO
-x_2024 = respondieron_2024.drop(columns=['DESOCUPADO', 'ANO4'])
+x_2024 = respondieron_2024.loc[:, 'CH03':'NIVEL_ED'].drop(columns=['CH15_COD', 'CH16_COD']) #TM: deberíamos incluir IPCF? Es raro, porque esas preguntas se hacen cuando se pregunta actividad. Yo no la incluiría.
+# x_2024 = x_2024.assign(IPCF=respondieron_2024['IPCF'])  #TM: yo no la incluiría
+
+# Identificamos las variables categóricas y creamos dummies en base a sus valores
+x_2004 = pd.get_dummies(x_2004, drop_first=True)
+x_2024 = pd.get_dummies(x_2024, drop_first=True)
 
 # Reseteamos los índices
 x_2004 = x_2004.reset_index(drop=True)
@@ -441,19 +461,154 @@ print(f'Para el año 2024 tenemos un conjunto de entrenamiento de {len(x_2024_tr
 
 ##### Inciso 2 ####
 
+
+# === Año 2004 === #
+
 ## Regresión Logística
-from sklearn.linear_model import LogisticRegression
-
-# Creamos y entrenamos el modelo de regresión logística para 2004 y 2024
 log_reg_2004 = LogisticRegression(penalty=None).fit(x_2004_train, y_2004_train)
-log_reg_2004.fit(x_2004_train, y_2004_train)
+y_pred_log_2004 = log_reg_2004.predict(x_2004_test)
+y_pred_prob_log_2004 = log_reg_2004.predict_proba(x_2004_test)[:, 1]
 
+# Métricas para Regresión Logística (2004)
+fpr_log_2004, tpr_log_2004, _ = roc_curve(y_2004_test, y_pred_prob_log_2004)
+roc_auc_log_2004 = auc(fpr_log_2004, tpr_log_2004)
+
+print("Regresión Logística - Año 2004")
+print(f"Accuracy: {accuracy_score(y_2004_test, y_pred_log_2004):.4f}")
+print(f"AUC: {roc_auc_log_2004:.4f}")
+print(f"Matriz de Confusión:\n{confusion_matrix(y_2004_test, y_pred_log_2004)}")
+
+## Análisis Discriminante Lineal (LDA, por sus siglas en inglés)
+lda_2004 = LinearDiscriminantAnalysis()
+lda_2004.fit(x_2004_train, y_2004_train)
+y_pred_lda_2004 = lda_2004.predict(x_2004_test)
+y_pred_prob_lda_2004 = lda_2004.predict_proba(x_2004_test)[:, 1]
+
+# Métricas para LDA (2004)
+fpr_lda_2004, tpr_lda_2004, _ = roc_curve(y_2004_test, y_pred_prob_lda_2004)
+roc_auc_lda_2004 = auc(fpr_lda_2004, tpr_lda_2004)
+
+print("\nAnálisis Discriminante Lineal - Año 2004")
+print(f"Accuracy: {accuracy_score(y_2004_test, y_pred_lda_2004):.4f}")
+print(f"AUC: {roc_auc_lda_2004:.4f}")
+print(f"Matriz de Confusión:\n{confusion_matrix(y_2004_test, y_pred_lda_2004)}")
+
+## KNN (k=3) 
+knn_2004 = KNeighborsClassifier(n_neighbors=3)
+knn_2004.fit(x_2004_train, y_2004_train)
+y_pred_knn_2004 = knn_2004.predict(x_2004_test)
+y_pred_prob_knn_2004 = knn_2004.predict_proba(x_2004_test)[:, 1]
+
+# Métricas para KNN (2004)
+fpr_knn_2004, tpr_knn_2004, _ = roc_curve(y_2004_test, y_pred_prob_knn_2004)
+roc_auc_knn_2004 = auc(fpr_knn_2004, tpr_knn_2004)
+
+print("\nKNN (k=3) - Año 2004")
+print(f"Accuracy: {accuracy_score(y_2004_test, y_pred_knn_2004):.4f}")
+print(f"AUC: {roc_auc_knn_2004:.4f}")
+print(f"Matriz de Confusión:\n{confusion_matrix(y_2004_test, y_pred_knn_2004)}")
+
+## Naive Bayes
+nb_2004 = GaussianNB()
+nb_2004.fit(x_2004_train, y_2004_train)
+y_pred_nb_2004 = nb_2004.predict(x_2004_test)
+y_pred_prob_nb_2004 = nb_2004.predict_proba(x_2004_test)[:, 1]
+
+# Métricas para Naive Bayes (2004)
+fpr_nb_2004, tpr_nb_2004, _ = roc_curve(y_2004_test, y_pred_prob_nb_2004)
+roc_auc_nb_2004 = auc(fpr_nb_2004, tpr_nb_2004)
+
+print("\nNaive Bayes - Año 2004")
+print(f"Accuracy: {accuracy_score(y_2004_test, y_pred_nb_2004):.4f}")
+print(f"AUC: {roc_auc_nb_2004:.4f}")
+print(f"Matriz de Confusión:\n{confusion_matrix(y_2004_test, y_pred_nb_2004)}")
+
+## Gráfico de Curvas ROC
+plt.figure(figsize=(10, 6))
+plt.plot(fpr_log_2004, tpr_log_2004, label=f"Reg. Logística (AUC = {roc_auc_log_2004:.4f})")
+plt.plot(fpr_lda_2004, tpr_lda_2004, label=f"LDA (AUC = {roc_auc_lda_2004:.4f})")
+plt.plot(fpr_knn_2004, tpr_knn_2004, label=f"KNN (AUC = {roc_auc_knn_2004:.4f})")
+plt.plot(fpr_nb_2004, tpr_nb_2004, label=f"Naive Bayes (AUC = {roc_auc_nb_2004:.4f})")
+plt.plot([0, 1], [0, 1], 'k--', label="Random Classifier")
+plt.title("Curvas ROC - Año 2004")
+plt.xlabel("Tasa de Falsos Positivos (FPR)")
+plt.ylabel("Tasa de Verdaderos Positivos (TPR)")
+plt.legend(loc="lower right")
+plt.show()
+
+# === Año 2024 === #
+
+## Regresión Logística
 log_reg_2024 = LogisticRegression(penalty=None).fit(x_2024_train, y_2024_train)
+y_pred_log_2024 = log_reg_2024.predict(x_2024_test)
+y_pred_prob_log_2024 = log_reg_2024.predict_proba(x_2024_test)[:, 1]
 
+# Métricas para Regresión Logística (2024)
+fpr_log_2024, tpr_log_2024, _ = roc_curve(y_2024_test, y_pred_prob_log_2024)
+roc_auc_log_2024 = auc(fpr_log_2024, tpr_log_2024)
 
-# Predicciones en el conjunto de prueba para cada año
-y_pred_2004 = log_reg_2004.predict(x_2004_test)
-y_pred_2024 = log_reg_2024.predict(x_2024_test)
+print("Regresión Logística - Año 2024")
+print(f"Accuracy: {accuracy_score(y_2024_test, y_pred_log_2024):.4f}")
+print(f"AUC: {roc_auc_log_2024:.4f}")
+print(f"Matriz de Confusión:\n{confusion_matrix(y_2024_test, y_pred_log_2024)}")
+
+## Análisis Discriminante Lineal (LDA, por sus siglas en inglés)
+lda_2024 = LinearDiscriminantAnalysis()
+lda_2024.fit(x_2024_train, y_2024_train)
+y_pred_lda_2024 = lda_2024.predict(x_2024_test)
+y_pred_prob_lda_2024 = lda_2024.predict_proba(x_2024_test)[:, 1]
+
+# Métricas para LDA (2024)
+fpr_lda_2024, tpr_lda_2024, _ = roc_curve(y_2024_test, y_pred_prob_lda_2024)
+roc_auc_lda_2024 = auc(fpr_lda_2024, tpr_lda_2024)
+
+print("\nAnálisis Discriminante Lineal - Año 2024")
+print(f"Accuracy: {accuracy_score(y_2024_test, y_pred_lda_2024):.4f}")
+print(f"AUC: {roc_auc_lda_2024:.4f}")
+print(f"Matriz de Confusión:\n{confusion_matrix(y_2024_test, y_pred_lda_2024)}")
+
+## KNN (k=3) 
+knn_2024 = KNeighborsClassifier(n_neighbors=3)
+knn_2024.fit(x_2024_train, y_2024_train)
+y_pred_knn_2024 = knn_2024.predict(x_2024_test)
+y_pred_prob_knn_2024 = knn_2024.predict_proba(x_2024_test)[:, 1]
+
+# Métricas para KNN (2024)
+fpr_knn_2024, tpr_knn_2024, _ = roc_curve(y_2024_test, y_pred_prob_knn_2024)
+roc_auc_knn_2024 = auc(fpr_knn_2024, tpr_knn_2024)
+
+print("\nKNN (k=3) - Año 2024")
+print(f"Accuracy: {accuracy_score(y_2024_test, y_pred_knn_2024):.4f}")
+print(f"AUC: {roc_auc_knn_2024:.4f}")
+print(f"Matriz de Confusión:\n{confusion_matrix(y_2024_test, y_pred_knn_2024)}")
+
+## Naive Bayes
+nb_2024 = GaussianNB()
+nb_2024.fit(x_2024_train, y_2024_train)
+y_pred_nb_2024 = nb_2024.predict(x_2024_test)
+y_pred_prob_nb_2024 = nb_2024.predict_proba(x_2024_test)[:, 1]
+
+# Métricas para Naive Bayes (2024)
+fpr_nb_2024, tpr_nb_2024, _ = roc_curve(y_2024_test, y_pred_prob_nb_2024)
+roc_auc_nb_2024 = auc(fpr_nb_2024, tpr_nb_2024)
+
+print("\nNaive Bayes - Año 2024")
+print(f"Accuracy: {accuracy_score(y_2024_test, y_pred_nb_2024):.4f}")
+print(f"AUC: {roc_auc_nb_2024:.4f}")
+print(f"Matriz de Confusión:\n{confusion_matrix(y_2024_test, y_pred_nb_2024)}")
+
+# ========================= Gráfico de Curvas ROC (2024) =========================
+plt.figure(figsize=(10, 6))
+plt.plot(fpr_log_2024, tpr_log_2024, label=f"Reg. Logística (AUC = {roc_auc_log_2024:.4f})")
+plt.plot(fpr_lda_2024, tpr_lda_2024, label=f"LDA (AUC = {roc_auc_lda_2024:.4f})")
+plt.plot(fpr_knn_2024, tpr_knn_2024, label=f"KNN (AUC = {roc_auc_knn_2024:.4f})")
+plt.plot(fpr_nb_2024, tpr_nb_2024, label=f"Naive Bayes (AUC = {roc_auc_nb_2024:.4f})")
+plt.plot([0, 1], [0, 1], 'k--', label="Random Classifier")
+plt.title("Curvas ROC - Año 2024")
+plt.xlabel("Tasa de Falsos Positivos (FPR)")
+plt.ylabel("Tasa de Verdaderos Positivos (TPR)")
+plt.legend(loc="lower right")
+plt.show()
 
 
 
