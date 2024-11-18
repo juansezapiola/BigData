@@ -10,9 +10,9 @@
 -                      Fecha: 15 de Noviembre de 2024                         -
 -------------------------------------------------------------------------------
 
----------
- ÍNDICE
----------
+----------
+  ÍNDICE
+----------
 
 0. Seteo del espacio de trabajo
 1. Parte I: Analizando la base
