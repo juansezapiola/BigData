@@ -53,7 +53,7 @@ from sklearn.metrics import (
 import matplotlib.pyplot as plt
 
 ## Definimos el directorio de trabajo
-os.chdir(r'/Users/tomasmarotta/Documents/GitHub/BigData/TPs/TP3')
+os.chdir(r'/Users/juansegundozapiola/Documents/Maestria/Big Data/BigData/TPs/TP3')
 
 '''
 --------------------------------
