@@ -422,7 +422,7 @@ plt.show()
 counts = HOGAR_T1_2024_2004.groupby(['ANO4', 'V6'])['CODUSU'].count().unstack(fill_value=0)
 
 # Crear el gráfico de barras apiladas para 2004 y 2024
-counts.plot(kind='bar', stacked=True, figsize=(10, 6), color=['blue', 'green'], alpha=0.7)
+counts.plot(kind='bar', stacked=True, figsize=(10, 6), color=['purple', 'pink'], alpha=0.7)
 
 # Añadir etiquetas y título
 plt.xlabel('Año', fontsize=12)
@@ -439,13 +439,13 @@ plt.show()
 counts = HOGAR_T1_2024_2004.groupby(['ANO4', 'V13'])['CODUSU'].count().unstack(fill_value=0)
 
 # Crear el gráfico de barras apiladas para 2004 y 2024
-counts.plot(kind='bar', stacked=True, figsize=(10, 6), color=['blue', 'green'], alpha=0.7)
+counts.plot(kind='bar', stacked=True, figsize=(10, 6), color=['red', 'orange'], alpha=0.7)
 
 # Añadir etiquetas y título
 plt.xlabel('Año', fontsize=12)
 plt.ylabel('Cantidad de Hogares', fontsize=12)
 plt.title('Cantidad de Hogares que vive de gastar lo que tenían ahorrado.', fontsize=14)
-plt.legend(title='', labels=['Reciben', 'No Reciben'])
+plt.legend(title='', labels=['Gastan', 'No Gastan'])
 
 # Mostrar el gráfico
 plt.tight_layout()
@@ -456,13 +456,13 @@ plt.show()
 counts = HOGAR_T1_2024_2004.groupby(['ANO4', 'V14'])['CODUSU'].count().unstack(fill_value=0)
 
 # Crear el gráfico de barras apiladas para 2004 y 2024
-counts.plot(kind='bar', stacked=True, figsize=(10, 6), color=['blue', 'green'], alpha=0.7)
+counts.plot(kind='bar', stacked=True, figsize=(10, 6), color=['blue', 'lightblue'], alpha=0.7)
 
 # Añadir etiquetas y título
 plt.xlabel('Año', fontsize=12)
 plt.ylabel('Cantidad de Hogares', fontsize=12)
 plt.title('Cantidad de Hogares que vive de pedir préstamos a familiares / amigos.', fontsize=14)
-plt.legend(title='', labels=['Reciben', 'No Reciben'])
+plt.legend(title='', labels=['Piden', 'No Piden'])
 
 # Mostrar el gráfico
 plt.tight_layout()
@@ -473,13 +473,13 @@ plt.show()
 counts = HOGAR_T1_2024_2004.groupby(['ANO4', 'V17'])['CODUSU'].count().unstack(fill_value=0)
 
 # Crear el gráfico de barras apiladas para 2004 y 2024
-counts.plot(kind='bar', stacked=True, figsize=(10, 6), color=['blue', 'green'], alpha=0.7)
+counts.plot(kind='bar', stacked=True, figsize=(10, 6), color=['yellow', 'gray'], alpha=0.7)
 
 # Añadir etiquetas y título
 plt.xlabel('Año', fontsize=12)
 plt.ylabel('Cantidad de Hogares', fontsize=12)
 plt.title('Cantidad de Hogares que vive de vender alguna de sus pertenencias.', fontsize=14)
-plt.legend(title='', labels=['Reciben', 'No Reciben'])
+plt.legend(title='', labels=['Vende', 'No Vende'])
 
 # Mostrar el gráfico
 plt.tight_layout()
@@ -491,7 +491,7 @@ plt.show()
 counts = HOGAR_T1_2024_2004.groupby(['ANO4', 'V15'])['CODUSU'].count().unstack(fill_value=0)
 
 # Crear el gráfico de barras apiladas para 2004 y 2024
-counts.plot(kind='bar', stacked=True, figsize=(10, 6), color=['blue', 'green'], alpha=0.7)
+counts.plot(kind='bar', stacked=True, figsize=(10, 6), color=['brown', 'black'], alpha=0.7)
 
 # Añadir etiquetas y título
 plt.xlabel('Año', fontsize=12)
@@ -816,6 +816,9 @@ plt.legend(loc="lower right")
 plt.show()  
 
 
+
+
+
 #Inciso 5
 
 
@@ -1094,7 +1097,7 @@ plt.figure(figsize=(16, 8))
 sns.boxplot(x='Alpha', y='Error_Medio_Validación', hue='Modelo', data=errors_combined_2024)
 plt.xlabel('Alpha (λ)', fontsize=12)
 plt.ylabel('Error Medio de Validación', fontsize=12)
-plt.title('Distribución del Error de Validación para Cada Alpha en Ridge y Lasso (Año 2004)', fontsize=14)
+plt.title('Distribución del Error de Validación para Cada Alpha en Ridge y Lasso (Año 2024)', fontsize=14)
 plt.xticks(ticks=range(len(unique_alphas_2024)), labels=alpha_labels_2024, rotation=90)  # Aplicar etiquetas redondeadas
 plt.legend(title='Modelo')
 plt.tight_layout()
