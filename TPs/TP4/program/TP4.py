@@ -69,7 +69,7 @@ from ISLP import load_data
 
 
 ## Definimos el directorio de trabajo
-os.chdir(r'/Users/juansegundozapiola/Documents/Maestria/Big Data/BigData/TPs/TP4')
+os.chdir(r'C:/Users/eitan/OneDrive - Económicas - UBA/Documentos/GitHub/BigData/TPs/TP4')
 
 
 
@@ -383,7 +383,7 @@ HOG_IND_T1_2024_2004['PROPORCION_NIÑOS'] = (
 )
 
 
-#4. Proporción de personas con secundaria completa o mas. 
+#4. Proporción de personas con secundaria completa o mas.
 
 # Creamos una variable para identificar si una persona tiene secundaria completa o más
 HOG_IND_T1_2024_2004['EDUCACION_SECUNDARIA_O_MAS'] = (
@@ -503,6 +503,50 @@ plt.legend(title='', labels=['Reciben', 'No Reciben'])
 plt.tight_layout()
 plt.show()
 
+
+## Tabla de Estadísticas Descriptivas:
+
+# Lista de variables y etiquetas
+variables = {
+    'V5': 'Subsidios',
+    'V6': 'Ayuda social',
+    'V13': 'Mercaderías/ropa/alimentos del gobierno',
+    'V14': 'Préstamos familiares/amigos',
+    'V17': 'Venta de pertenencias',
+    'V15': 'Préstamos a bancos'
+}
+
+# Crear un DataFrame para almacenar los resultados
+summary = []
+
+# Iterar sobre las variables y calcular estadísticas
+for var, label in variables.items():
+    # Filtrar sólo los hogares con valor 1
+    filtered = HOGAR_T1_2024_2004[HOGAR_T1_2024_2004[var] == 1]
+    
+    # Contar la cantidad de hogares por año
+    counts = filtered.groupby('ANO4')['CODUSU'].count()
+    
+    # Calcular el total de hogares por año
+    total_hogares = HOGAR_T1_2024_2004.groupby('ANO4')['CODUSU'].count()
+    
+    # Calcular proporciones
+    proportions = counts / total_hogares
+    
+    # Guardar los resultados en la lista
+    for year in counts.index:
+        summary.append({
+            'Variable': label,
+            'Año': year,
+            'Cantidad': counts[year],
+            'Proporción': proportions[year]
+        })
+
+# Convertir la lista en un DataFrame
+summary_df = pd.DataFrame(summary)
+
+# Mostrar la tabla
+print(summary_df)    
 
 
 
