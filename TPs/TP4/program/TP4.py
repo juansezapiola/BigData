@@ -569,10 +569,10 @@ hogares_desocupados = hogares.loc[hogares['HOGAR_CON_DESOCUPACION'] == 1, 'PONDE
 
 # Calculamos la tasa
 tasa_hogares_desocupados = (hogares_desocupados / total_hogares) * 100
-print(f"Tasa de hogares con desocupación: {tasa_hogares_desocupados:.2f}%")
+print(f"Tasa de hogares con desocupación en Gran Córdoba: {tasa_hogares_desocupados:.2f}%")
 
 '''
-Tasa de hogares con desocupación: 9.99%%
+Tasa de hogares con desocupación en el Gran Córdoba: 9.99%%
 '''
 
 
