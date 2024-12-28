@@ -593,7 +593,7 @@ print(conteo_estado_anual)
 respondieron = HOG_IND_T1_2024_2004[HOG_IND_T1_2024_2004['ESTADO'] != 0]
 norespondieron = HOG_IND_T1_2024_2004[HOG_IND_T1_2024_2004['ESTADO'] == 0]
 
-#Agregamos Variable desocupado
+#Agregamos Variable desocupado!
 
 respondieron['DESOCUPADO'] = respondieron['ESTADO'].apply(lambda x: 1 if x in [2] else 0)
 
