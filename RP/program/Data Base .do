@@ -24,7 +24,8 @@ gl output "$main/output"
 *1) Identification of improved seeds adoption 
 *2) HH Characteristics
 *3) AGR Characteristics
-*4) Final Merge: HH_CHAR + AGR_CHAR
+*4) COMM Characteristics
+*5) Final Merge: HH_CHAR + AGR_CHAR
 *==============================================================================*
 
 
@@ -40,6 +41,11 @@ bysort case_id: gen dup_count = _n
 keep if dup_count==1
 
 keep case_id
+
+merge 1:1 case_id using "/Users/juansegundozapiola/Documents/Maestria/Big Data/MWI_2019/hh_mod_a_filt.dta", force
+drop if _merge==2
+keep case_id ea_id 
+
 save "$input/key_id_2019.dta", replace
 
 *8798 HH
@@ -228,10 +234,17 @@ Module H:
 H03 coupons/vouchers for seeds -> for improved
 H04 credit for seed -> for improved
 H41 left over seeds 
+H37 seeds for free
+
 Module T:
 T01 advice obtained -> agriculture category 
+
 Module C:
 C04 plot size
+
+Module D:
+D58 -> Cover crops
+
 
 */
 
@@ -264,6 +277,20 @@ keep case_id total_plot_size
 tempfile temp_data_2
 save `temp_data_2'
 
+use "/Users/juansegundozapiola/Documents/Maestria/Big Data/MWI_2019/ag_mod_d.dta", clear
+bysort case_id: gen id=_n
+keep case_id id ag_d58
+
+gen cover_crop = (ag_d58 == 1)  // Create a binary variable for cover crops
+bysort case_id (id): gen total_plots = _N  // Count total plots per household
+bysort case_id: gen cover_plots = sum(cover_crop)  // Count plots using cover crops per household
+gen proportion_cover = cover_plots / total_plots  // Calculate proportion
+keep if id==1
+
+keep case_id proportion_cover
+
+tempfile temp_data_3
+save `temp_data_3'
 
 use "/Users/juansegundozapiola/Documents/Maestria/Big Data/MWI_2019/ag_mod_h.dta", clear
 *id for each seed cultivated (like plot id)
@@ -276,8 +303,9 @@ replace improved = 0 if improved==.
 gen coupon_imp = (improved==1 & ag_h03==1)
 gen credit_imp = (improved==1 & ag_h04==1)
 gen left_over_seeds = (ag_h41==1)
+gen free_seed = (improved==1 & ag_h37==1)
 
-keep case_id id improved coupon_imp credit_imp left_over_seeds
+keep case_id id improved coupon_imp credit_imp left_over_seeds free_seed
 
 egen total_coupon = total(coupon_imp), by(case_id) // 1: hh used coupon to purchase improved seed.  
 egen total_plots = count(coupon_imp), by(case_id) 
@@ -289,26 +317,88 @@ gen prop_credit = total_credit / total_plots //I have the proportion of plots th
 egen total_left_seeds = total(left_over_seeds), by(case_id)   
 gen prop_left_seeds = total_left_seeds / total_plots //I have the proportion of plots that used left over seeds 
 
+egen total_free = total(free_seed), by(case_id)   
+gen prop_free = total_free / total_plots 
 
 keep if id==1
 
-keep case_id prop_coupon prop_credit prop_left_seeds
+keep case_id prop_coupon prop_credit prop_left_seeds prop_free
 
 merge m:1 case_id using `temp_data'
 drop if _merge==2
 drop _merge
 merge 1:1 case_id using `temp_data_2', force
-
 drop _merge
-
+merge 1:1 case_id using `temp_data_3', force
+drop _merge
 
 save "$input/AGRO_CHAR.dta", replace
 
 
+*4) COMM Characteristics
+*==============================================================================*
+use "$input/key_id_2019.dta", clear
+
+/*
+Community Characteristics:
+
+Module F:
+F07 assist agr ext der officer live?
+F12 sellers of hybrid maize
+F28 agriculture based project -> F30 main focus (1 & 9)
+
+Module J:
+J01 org that exist in community 
+*/
+
+use "/Users/juansegundozapiola/Documents/Maestria/Big Data/MWI_2019/com_cf1.dta", clear
+
+gen assistant_ag_officer = .
+replace assistant_ag_officer=1 if com_cf07==1
+replace assistant_ag_officer=0 if com_cf07==2
+
+rename com_cf12 maize_hybrid_sellers
+
+keep ea_id assistant_ag_officer maize_hybrid_sellers
+bysort ea_id: gen n=_n
+
+tempfile temp_data
+save `temp_data'
+
+use  "/Users/juansegundozapiola/Documents/Maestria/Big Data/MWI_2019/com_cf2.dta", clear
+bysort ea_id: gen n=_n
+
+gen agr_proj_yields =.
+replace agr_proj_yields = 1 if com_cf30==1
+replace agr_proj_yields = 0 if agr_proj_yields==.
+egen total_yield_projects = total(agr_proj_yields), by(ea_id)
+
+gen agr_proj_imp =.
+replace agr_proj_imp = 1 if com_cf30==9
+replace agr_proj_imp = 0 if agr_proj_imp==.
+egen total_imp_projects = total(agr_proj_imp), by(ea_id)
+
+keep if n==1
+
+keep ea_id total_yield_projects total_imp_projects
+
+
+merge 1:1 ea_id using `temp_data', force
+drop _merge
+replace total_yield_projects=0 if total_yield_projects==.
+replace total_imp_projects=0 if total_imp_projects==.
+drop n
+
+merge 1:m ea_id using "$input/key_id_2019.dta", force
+drop if _merge==1
+drop _merge
+save "$input/COMM_CHAR.dta", replace
 
 
 
-*4) Final Merge: HH_CHAR + AGR_CHAR
+
+
+*5) Final Merge: HH_CHAR + AGR_CHAR
 *==============================================================================*
 
 use "$input/hh_improved.dta", clear
@@ -319,6 +409,8 @@ drop _merge
 merge 1:1 case_id using "$input/AGRO_CHAR.dta", force
 drop _merge
 
+merge 1:1 case_id using "$input/COMM_CHAR.dta", force
+drop _merge
 
 tab HH_head_edu, gen(education_)
 drop HH_head_edu education_8 education_9
@@ -335,17 +427,23 @@ label variable education_5 "head with NON-UNIV.DIPLOMA education"
 label variable education_6 "head with UNIVER.DIPLOMA DEGREE education"
 label variable education_7 "head with POST-GRAD.DIPLOMA DEGREE education"
 label variable total_plot_size "Plot size (ACRES)"
-label variable prop_coupon "Proportion of plot that used coupons/vouchers for improved seeds"
-label variable prop_credit "Proportion of plot who had credit for improved seeds"
-label variable prop_left_seeds "Proportion of plot who used seed left over from a previous season"
+label variable prop_coupon "Proportion of improved seeds bought using coupons/vouchers"
+label variable prop_credit "Proportion of improved seeds bought using credit"
+label variable prop_left_seeds "Proportion of the seeds that come from left over's of the previous season"
 label variable advice "Obtained agriculture advice"
-
+label variable prop_free "Obtained agriculture advice"
+label variable total_yield_projects "Amount of projects for yield increase in comm"
+label variable total_imp_projects "Amount of projects for improved seeds in comm"
+label variable assistant_ag_officer "Does an Assist. Agricultural Extension Development Officer live in this community?"
+label variable maize_hybrid_sellers "Number of sellers of hybrid maize seed in the community"
+label variable proportion_cover "Proportion of seeds that when planted there had cover before"
 
 save "$input/MWI_final.dta", replace
 
 
 
 
+use "$input/MWI_final.dta", clear
 
 
 
