@@ -277,20 +277,206 @@ keep case_id total_plot_size
 tempfile temp_data_2
 save `temp_data_2'
 
+
+
 use "/Users/juansegundozapiola/Documents/Maestria/Big Data/MWI_2019/ag_mod_d.dta", clear
 bysort case_id: gen id=_n
-keep case_id id ag_d58
+keep case_id id ag_d58 ag_d21 ag_d22 ag_d26 ag_d28a ag_d23 ag_d24a ag_d25a ag_d27
 
 gen cover_crop = (ag_d58 == 1)  // Create a binary variable for cover crops
 bysort case_id (id): gen total_plots = _N  // Count total plots per household
 bysort case_id: gen cover_plots = sum(cover_crop)  // Count plots using cover crops per household
 gen proportion_cover = cover_plots / total_plots  // Calculate proportion
+
+
+label list ag_d21
+/*
+ 1 Sandy (Mchenga)
+ 2 Between sandy &amp; clay(Pakati pa mchenga ndi katondo)
+ 3 Clay (Katondo)
+ 4 Other (Specify)
+*/
+gen sandy = (ag_d21 == 1) 
+gen between = (ag_d21 == 2) 
+gen clay = (ag_d21 == 3) 
+gen other = (ag_d21 == 4) 
+egen sandy_plots = total(sandy), by(case_id)
+egen between_plots = total(between), by(case_id)
+egen clay_plots = total(clay), by(case_id)
+egen other_plots = total(other), by(case_id)
+
+gen prop_sandy = sandy_plots / total_plots 
+gen prop_between = between_plots / total_plots 
+gen prop_clay = clay_plots / total_plots 
+gen prop_other = other_plots / total_plots 
+
+
+
+label list ag_d22
+
+gen good = (ag_d22 == 1)
+gen fair = (ag_d22 == 2)
+gen poor = (ag_d22 == 3)
+
+// Count the number of plots with each condition per household
+foreach condition in good fair poor {
+    egen `condition'_plots = total(`condition'), by(case_id)
+}
+
+// Calculate proportions
+foreach condition in good fair poor {
+    gen prop_`condition' = `condition'_plots / total_plots
+}
+
+label list ag_d26
+/*
+1 Flat
+2 Slight slope
+3 Moderate slope
+4 Steep, hilly
+*/
+
+gen flat = (ag_d26 == 1)
+gen slight = (ag_d26 == 2)
+gen moderate = (ag_d26 == 3)		   
+gen steep = (ag_d26 == 4)	
+
+foreach condition in flat slight moderate steep {
+    egen `condition'_plots = total(`condition'), by(case_id)
+}
+
+foreach condition in flat slight moderate steep {
+    gen prop_`condition' = `condition'_plots / total_plots
+}
+
+
+label list irrigation
+/*
+1 Divert stream
+2 Bucket
+3 Hand pump
+4 Treadle pump
+5 Motor pump
+6 Gravity
+7 Rainfed/No irrigation
+8 Other (Specify)
+9 Can Irrigation
+*/
+gen divert_stream = (ag_d28a == 1)
+gen bucket = (ag_d28a == 2)
+gen hand_pump = (ag_d28a == 3)
+gen treadle_pump = (ag_d28a == 4)
+gen motor_pump = (ag_d28a == 5)
+gen gravity = (ag_d28a == 6)
+gen rainfed = (ag_d28a == 7)
+gen other_ = (ag_d28a == 8)
+gen can_irrigation = (ag_d28a == 9)
+
+foreach method in divert_stream bucket hand_pump treadle_pump motor_pump gravity rainfed other_ can_irrigation {
+    egen `method'_plots = total(`method'), by(case_id)
+}
+
+foreach method in divert_stream bucket hand_pump treadle_pump motor_pump gravity rainfed other_ can_irrigation {
+    gen prop_`method' = `method'_plots / total_plots
+}
+
+
+label list ag_d23
+/*
+1 No Erosion
+2 Low
+3 Moderate
+4 High
+*/
+gen no_erosion = (ag_d24 == 1)
+gen low_erosion = (ag_d24 == 2)
+gen moderate_erosion = (ag_d24 == 3)
+gen high_erosion = (ag_d24 == 4)
+
+foreach erosion in no_erosion low_erosion moderate_erosion high_erosion {
+    egen `erosion'_plots = total(`erosion'), by(case_id)
+}
+
+foreach erosion in no_erosion low_erosion moderate_erosion high_erosion {
+    gen prop_`erosion' = `erosion'_plots / total_plots
+}
+
+label list erosion
+/*
+1 Terrain
+2 Flooding
+3 Wind
+4 Animals
+5 Other (Specify)
+*/
+gen terrain = (ag_d24a == 1)
+gen flooding = (ag_d24a == 2)
+gen wind = (ag_d24a == 3)
+gen animals = (ag_d24a == 4)
+gen other_constraint = (ag_d24a == 5)
+
+foreach constraint in terrain flooding wind animals other_constraint {
+    egen `constraint'_plots = total(`constraint'), by(case_id)
+}
+
+foreach constraint in terrain flooding wind animals other_constraint {
+    gen prop_`constraint' = `constraint'_plots / total_plots
+}
+
+
+label list control
+/*
+           1 No erosion control
+           2 Terraces
+           3 Erosion control bunds
+           4 Gabions / Sandbags
+           5 Vetiver grass
+           6 Tree belts
+           7 Water harvest bunds
+           8 Drainage ditches
+           9 Other (Specify)
+
+*/
+
+gen no_erosion_control = (ag_d25a == 1)
+gen terraces = (ag_d25a == 2)
+gen erosion_bunds = (ag_d25a == 3)
+gen gabions_sandbags = (ag_d25a == 4)
+gen vetiver_grass = (ag_d25a == 5)
+gen tree_belts = (ag_d25a == 6)
+gen water_harvest_bunds = (ag_d25a == 7)
+gen drainage_ditches = (ag_d25a == 8)
+gen other_erosion_control = (ag_d25a == 9)
+
+foreach control in no_erosion_control terraces erosion_bunds gabions_sandbags vetiver_grass tree_belts water_harvest_bunds drainage_ditches other_erosion_control {
+    egen `control'_plots = total(`control'), by(case_id)
+}
+
+foreach control in no_erosion_control terraces erosion_bunds gabions_sandbags vetiver_grass tree_belts water_harvest_bunds drainage_ditches other_erosion_control {
+    gen prop_`control' = `control'_plots / total_plots
+}
+
+
+
+gen swamp = (ag_d27 == 1)  
+bysort case_id: gen swamp_plots = sum(swamp) 
+gen prop_swamp = swamp_plots / total_plots  
+
 keep if id==1
 
-keep case_id proportion_cover
+
+
+keep case_id proportion_cover prop_sandy prop_between prop_clay prop_other prop_good prop_fair prop_poor prop_flat ///
+prop_slight prop_moderate prop_steep prop_divert_stream prop_bucket prop_hand_pump prop_treadle_pump prop_motor_pump ///
+prop_gravity prop_rainfed prop_other_ prop_can_irrigation prop_no_erosion prop_low_erosion prop_moderate_erosion ///
+prop_high_erosion prop_terrain prop_flooding prop_wind prop_animals prop_other_constraint prop_no_erosion_control ///
+prop_terraces prop_erosion_bunds prop_gabions_sandbags prop_vetiver_grass prop_tree_belts prop_water_harvest_bunds ///
+prop_drainage_ditches prop_other_erosion_control prop_swamp
 
 tempfile temp_data_3
 save `temp_data_3'
+
+
 
 use "/Users/juansegundozapiola/Documents/Maestria/Big Data/MWI_2019/ag_mod_h.dta", clear
 *id for each seed cultivated (like plot id)
@@ -437,6 +623,48 @@ label variable total_imp_projects "Amount of projects for improved seeds in comm
 label variable assistant_ag_officer "Does an Assist. Agricultural Extension Development Officer live in this community?"
 label variable maize_hybrid_sellers "Number of sellers of hybrid maize seed in the community"
 label variable proportion_cover "Proportion of seeds that when planted there had cover before"
+label variable prop_sandy "Proportion of sandy plots"
+label variable prop_between "Proportion of plots with between soil type"
+label variable prop_clay "Proportion of clay plots"
+label variable prop_other "Proportion of other soil types"
+label variable prop_good "Proportion of plots with good condition"
+label variable prop_fair "Proportion of plots with fair condition"
+label variable prop_poor "Proportion of plots with poor condition"
+label variable prop_flat "Proportion of flat terrain"
+label variable prop_slight "Proportion of slight slope terrain"
+label variable prop_moderate "Proportion of moderate slope terrain"
+label variable prop_steep "Proportion of steep terrain"
+label variable prop_divert_stream "Proportion of plots with divert stream irrigation"
+label variable prop_bucket "Proportion of plots with bucket irrigation"
+label variable prop_hand_pump "Proportion of plots with hand pump irrigation"
+label variable prop_treadle_pump "Proportion of plots with treadle pump irrigation"
+label variable prop_motor_pump "Proportion of plots with motor pump irrigation"
+label variable prop_gravity "Proportion of plots with gravity irrigation"
+label variable prop_rainfed "Proportion of rainfed plots"
+label variable prop_other_ "Proportion of plots with other irrigation method"
+label variable prop_can_irrigation "Proportion of plots with can irrigation"
+label variable prop_no_erosion "Proportion of plots with no erosion"
+label variable prop_low_erosion "Proportion of plots with low erosion"
+label variable prop_moderate_erosion "Proportion of plots with moderate erosion"
+label variable prop_high_erosion "Proportion of plots with high erosion"
+label variable prop_terrain "Proportion of plots with terrain constraints"
+label variable prop_flooding "Proportion of plots affected by flooding"
+label variable prop_wind "Proportion of plots affected by wind"
+label variable prop_animals "Proportion of plots affected by animals"
+label variable prop_other_constraint "Proportion of plots with other constraints"
+label variable prop_no_erosion_control "Proportion of plots with no erosion control"
+label variable prop_terraces "Proportion of plots with terraces for erosion control"
+label variable prop_erosion_bunds "Proportion of plots with erosion control bunds"
+label variable prop_gabions_sandbags "Proportion of plots with gabions or sandbags"
+label variable prop_vetiver_grass "Proportion of plots with vetiver grass for erosion control"
+label variable prop_tree_belts "Proportion of plots with tree belts for erosion control"
+label variable prop_water_harvest_bunds "Proportion of plots with water harvest bunds"
+label variable prop_drainage_ditches "Proportion of plots with drainage ditches"
+label variable prop_other_erosion_control "Proportion of plots with other erosion control methods"
+label variable prop_swamp "Proportion of swamp plots"
+
+order case_id ea_id hh_improved HH_head_fem HH_head_age HH_head_salaried_emp education_1 education_2 education_3 education_4 education_5 education_6 education_7
+
 
 save "$input/MWI_final.dta", replace
 
