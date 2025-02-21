@@ -70,8 +70,8 @@ from ISLP import load_data
 
 
 ## Definimos el directorio de trabajo
-os.chdir('/Users/juansegundozapiola/Documents/Maestria/Big Data/BigData/RP')
-
+#os.chdir('/Users/juansegundozapiola/Documents/Maestria/Big Data/BigData/RP')
+os.chdir('/Users/tomasmarotta/Documents/GitHub/BigData/RP')
 
 
 '''
