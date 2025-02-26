@@ -45,12 +45,16 @@ from sklearn.linear_model import LogisticRegression, LassoCV, RidgeCV, Lasso, Ri
 from sklearn.impute import SimpleImputer  # Para manejar valores NaN
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import confusion_matrix, accuracy_score, roc_curve, auc, mean_squared_error
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+
 
 # Gráficos
 import matplotlib.pyplot as plt
 
 ## Definimos el directorio de trabajo
-os.chdir('C:/Users/marottat/Desktop/')
+os.chdir('/Users/juansegundozapiola/Documents/Maestria/Big Data/BigData/RP')
 
 '''
 --------------------------------
@@ -59,7 +63,7 @@ os.chdir('C:/Users/marottat/Desktop/')
 '''
 
 # Abrimos la base de datos
-MWI_adoption = pd.read_stata("MWI_final.dta")
+MWI_adoption = pd.read_stata("input/MWI_final.dta")
 
 # Verificamos la estructura del dataset
 print(MWI_adoption.info())
@@ -139,6 +143,11 @@ conf_matrix_ridge = confusion_matrix(y_test, y_pred_ridge_binary)
 print("Matriz de Confusión - Lasso:\n", conf_matrix_lasso)
 print("Matriz de Confusión - Ridge:\n", conf_matrix_ridge)
 
+print(f"Accuracy Lasso: {accuracy_score(y_test, y_pred_lasso_binary):.4f}")
+#Accuracy: 0.8292
+print(f"Accuracy Ridge: {accuracy_score(y_test, y_pred_ridge_binary):.4f}")
+#Accuracy: 0.8193
+
 '''
 --------------------------------
 Curvas ROC
@@ -158,9 +167,130 @@ plt.figure(figsize=(8, 6))
 plt.plot(fpr_lasso, tpr_lasso, label=f"Lasso (AUC = {roc_auc_lasso:.4f})", linestyle='--')
 plt.plot(fpr_ridge, tpr_ridge, label=f"Ridge (AUC = {roc_auc_ridge:.4f})", linestyle='-')
 plt.plot([0, 1], [0, 1], 'k--', label="Random Classifier")
-plt.xlabel("Tasa de Falsos Positivos (FPR)")
-plt.ylabel("Tasa de Verdaderos Positivos (TPR)")
-plt.title("Curvas ROC para Lasso y Ridge")
+plt.xlabel("False Positive Rate (FPR)")
+plt.ylabel("True Positive Rate (TPR)")
+plt.title("ROC Curves for Lasso and Ridge")
 plt.legend()
 plt.grid()
 plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+--------------------------------
+Regresión Logística 
+--------------------------------
+'''
+
+log_reg = LogisticRegression(penalty=None).fit(X_train_scaled, y_train)
+y_pred_log = log_reg.predict(X_test_scaled)
+y_pred_prob_log= log_reg.predict_proba(X_test_scaled)[:, 1]
+
+# Métricas para Regresión Logística 
+fpr_log, tpr_log, _ = roc_curve(y_test, y_pred_prob_log)
+roc_auc_log = auc(fpr_log, tpr_log)
+
+print("Regresión Logística - Año 2024")
+print(f"Accuracy: {accuracy_score(y_test, y_pred_log):.4f}")
+print(f"AUC: {roc_auc_log:.4f}")
+print(f"Matriz de Confusión:\n{confusion_matrix(y_test, y_pred_log)}")
+
+
+'''
+--------------------------------
+LDA
+--------------------------------
+'''
+
+## Análisis Discriminante Lineal (LDA, por sus siglas en inglés)
+lda = LinearDiscriminantAnalysis()
+lda.fit(X_train, y_train)
+y_pred_lda = lda.predict(X_test)
+y_pred_prob_lda = lda.predict_proba(X_test)[:, 1]
+
+# Métricas para LDA 
+fpr_lda, tpr_lda, _ = roc_curve(y_test, y_pred_prob_lda)
+roc_auc_lda = auc(fpr_lda, tpr_lda)
+
+print("\nAnálisis Discriminante Lineal - Año 2024")
+print(f"Accuracy: {accuracy_score(y_test, y_pred_lda):.4f}")
+print(f"AUC: {roc_auc_lda:.4f}")
+print(f"Matriz de Confusión:\n{confusion_matrix(y_test, y_pred_lda)}")
+
+
+'''
+--------------------------------
+KNN
+--------------------------------
+'''
+## KNN (k=3) 
+knn = KNeighborsClassifier(n_neighbors=3)
+knn.fit(X_train, y_train)
+y_pred_knn = knn.predict(X_test)
+y_pred_prob_knn = knn.predict_proba(X_test)[:, 1]
+
+# Métricas para KNN 
+fpr_knn, tpr_knn, _ = roc_curve(y_test, y_pred_prob_knn)
+roc_auc_knn = auc(fpr_knn, tpr_knn)
+
+print("\nKNN (k=3)")
+print(f"Accuracy: {accuracy_score(y_test, y_pred_knn):.4f}")
+print(f"AUC: {roc_auc_knn:.4f}")
+print(f"Matriz de Confusión:\n{confusion_matrix(y_test, y_pred_knn)}")
+
+
+'''
+--------------------------------
+Naive Bayes
+--------------------------------
+'''
+
+## Naive Bayes
+nb = GaussianNB()
+nb.fit(X_train, y_train)
+y_pred_nb = nb.predict(X_test)
+y_pred_prob_nb = nb.predict_proba(X_test)[:, 1]
+
+# Métricas para Naive Bayes 
+fpr_nb, tpr_nb, _ = roc_curve(y_test, y_pred_prob_nb)
+roc_auc_nb = auc(fpr_nb, tpr_nb)
+
+print("\nNaive Bayes ")
+print(f"Accuracy: {accuracy_score(y_test, y_pred_nb):.4f}")
+print(f"AUC: {roc_auc_nb:.4f}")
+print(f"Matriz de Confusión:\n{confusion_matrix(y_test, y_pred_nb)}")
+
+## Gráfico de Curvas ROC 
+plt.figure(figsize=(10, 6))
+plt.plot(fpr_log, tpr_log, label=f"Logistic Regression (AUC = {roc_auc_log:.4f})")
+plt.plot(fpr_lda, tpr_lda, label=f"LDA (AUC = {roc_auc_lda:.4f})")
+plt.plot(fpr_knn, tpr_knn, label=f"KNN (AUC = {roc_auc_knn:.4f})")
+plt.plot(fpr_nb, tpr_nb, label=f"Naive Bayes (AUC = {roc_auc_nb:.4f})")
+plt.plot([0, 1], [0, 1], 'k--', label="Random Classifier")
+plt.title("ROC Curves")
+plt.xlabel("False Positive Rate (FPR)")
+plt.ylabel("True Positive Rate (TPR)")
+plt.legend(loc="lower right")
+plt.show()
+
+
+
+
+
+
+
+
+
